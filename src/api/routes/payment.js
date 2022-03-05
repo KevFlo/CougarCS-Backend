@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { check, validationResult } from 'express-validator';
 import { v4 as uuidv4 } from 'uuid';
-import { logger } from '../../utils/logger';
+import { logger } from '../../utils/logger/logger';
 import APICall from '../../utils/api/calls';
 
 const router = Router();
@@ -31,8 +31,7 @@ router.post(
 			.trim()
 			.escape()
 			.isLength({ min: 7, max: 7 }),
-
-		check('user.classification', 'Classification is required')
+		check('user.shirtSize', 'Shirt Size is required')
 			.not()
 			.isEmpty()
 			.trim()
@@ -68,6 +67,7 @@ router.post(
 			lastName,
 			email,
 			uhID,
+			shirtSize,
 			paidUntil,
 			phone,
 			shirtSize,
@@ -93,7 +93,7 @@ router.post(
 		}
 
 		try {
-			APICall.createStripeCustomer(
+			await APICall.createStripeCustomer(
 				firstName,
 				lastName,
 				email,
@@ -113,21 +113,33 @@ router.post(
 			return res.status(500).json({ message: 'Payment Error!' });
 		}
 
-		// CALL COUGARCS API
+
 		try {
 			await APICall.postContact({
-				...user,
-				transaction: 'Stripe',
+				transaction: `Payment via Stripe on ${new Date().toLocaleDateString()}`,
+				firstName,
+				lastName,
+				email,
+				uhID,
+				phone,
 				shirtSize,
+				paidUntil,
+
 			});
 		} catch (err) {
 			await APICall.sendEmail(
-				['vyas.r@cougarcs.com', 'webmaster@cougarcs.com'],
+				[
+					'vyas.r@cougarcs.com',
+					'webmaster@cougarcs.com',
+					'president@cougarcs.com',
+					'vice.president@cougarcs.com',
+				],
 				{ name: 'Payment Failure', email: 'info@cougarcs.com' },
-				'GSheet Error on Website Payments',
+				'CougarCS Cloud API - postContact Failed',
 				JSON.stringify({
 					name: `${firstName} ${lastName}`,
 					email,
+					uhID,
 					err: err.message,
 				})
 			);
@@ -137,6 +149,7 @@ router.post(
 				} - ${req.ip}`
 			);
 		}
+
 		logger.info('Payment Success');
 		return res.status(200).json({ message: 'OK' });
 	}

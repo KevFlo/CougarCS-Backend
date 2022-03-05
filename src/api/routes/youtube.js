@@ -5,29 +5,29 @@ import { CACHE_TIME } from '../../utils/config';
 import { getCache, setCache } from '../../utils/caching/cacheData';
 
 const router = Router();
-const key = 'tutor';
+const key = 'youtube';
 
 router.get('/', async (req, res) => {
 	const cacheContent = getCache(key);
 	if (cacheContent) {
-		logger.info('Tutors sent from cache');
+		logger.info('Videos sent from cache');
 		return res.status(200).json(cacheContent);
 	}
 	try {
-		const { tutors } = await APICall.getTutors();
+		const { videos } = await APICall.getYoutubeVideos();
 
-		setCache(key, { tutors }, CACHE_TIME);
-		logger.info('Stored tutors in cache');
+		setCache(key, { videos }, CACHE_TIME);
+		logger.info('Stored videos in cache');
 
-		logger.info('Tutors sent');
-		return res.status(200).json({ tutors });
+		logger.info('Videos sent');
+		return res.status(200).json({ videos });
 	} catch (err) {
 		logger.error(
 			`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${
 				req.method
 			} - ${req.ip}`
 		);
-		return res.status(500).json({ err, message: 'Unable to get tutors' });
+		return res.status(500).json({ err, message: 'Unable to get videos' });
 	}
 });
 

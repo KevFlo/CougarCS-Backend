@@ -1,4 +1,4 @@
-FROM node:erbium-alpine3.11 AS build
+FROM node:14.19.0-alpine3.14 AS build
 
 ENV NODE_ENV prod
 
@@ -10,21 +10,16 @@ RUN npm install
 
 COPY ./src ./src
 
-RUN npm run build
-
-RUN npm prune --production
-
-
-FROM node:erbium-alpine3.11
+RUN npm run build \
+    && npm prune --production
 
 
-
+FROM node:14.19.0-alpine3.14
 
 WORKDIR /app
 
-RUN chown -R 1000:1000 /app
-
-RUN chmod 755 /app
+RUN chown -R 1000:1000 /app \
+    && chmod 755 /app
 
 USER 1000
 
@@ -32,6 +27,6 @@ COPY --from=build /app/node_modules ./node_modules
 
 COPY --from=build /app/dist ./dist
 
-EXPOSE 4000
+EXPOSE ${PORT}
 
 CMD ["node", "./dist/server.js"]

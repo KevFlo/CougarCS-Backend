@@ -3,7 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import express, { json } from 'express';
 import helmet from 'helmet';
-import RateLimit from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 import actuator from 'express-actuator';
@@ -11,16 +11,19 @@ import compression from 'compression';
 import email from '../api/routes/email';
 import events from '../api/routes/event';
 import tutors from '../api/routes/tutors';
+import youtube from '../api/routes/youtube';
 import payment from '../api/routes/payment';
-import { logger } from '../utils/logger';
-import { httpLogger } from '../utils/httpLogger';
+import { logger } from '../utils/logger/logger';
+import { httpLogger } from '../utils/logger/httpLogger';
 import { ENABLE_CORS, PROD, SENTRY_URL } from '../utils/config';
 
 const app = express();
 
-const limiter = new RateLimit({
+const limiter = rateLimit({
 	windowMs: 1 * 60 * 1000,
 	max: 90,
+	standardHeaders: true,
+	legacyHeaders: false,
 });
 
 if (PROD) {
@@ -60,11 +63,11 @@ app.use(actuator());
 app.get('/', (req, res) => {
 	res.json({ welcome: 'CougarCS Backend 🐯' });
 });
-
 app.use('/api/payment', payment);
 app.use('/api/send', email);
 app.use('/api/events', events);
 app.use('/api/tutors', tutors);
+app.use('/api/youtube', youtube);
 
 app.use((req, res) => {
 	throw new Error(`Invaild Request - Endpoint: ${req.originalUrl}`);

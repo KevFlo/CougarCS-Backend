@@ -15,10 +15,15 @@ import {
 	COUGARCS_CLOUD_URL,
 	COUGARCS_CLOUD_ACCESS_KEY,
 	COUGARCS_CLOUD_SECRET_KEY,
-	CACHE_TIME,
+
+	CCSCLOUD_TOKEN_CACHE_TIME,
+	YOUTUBE_PLAYLIST_ID,
+	YOUTUBE_API_KEY,
 } from '../config';
-import { logger } from '../logger';
-import { getCache, setCache } from '../cacheData';
+import { logger } from '../logger/logger';
+import { getCache, setCache } from '../caching/cacheData';
+import { getMembershipDates } from '../membershipDate';
+
 
 const key = 'token';
 const stripe = new Stripe(STRIPE_API_KEY);
@@ -77,7 +82,7 @@ exports.checkRecaptcha = async function checkRecaptcha(recaptchaToken) {
 	return axios.post(verificationUrl);
 };
 
-exports.createStripeCustomer = function createStripeCustomer(
+exports.createStripeCustomer = async function createStripeCustomer(
 	firstName,
 	lastName,
 	email,
@@ -88,7 +93,7 @@ exports.createStripeCustomer = function createStripeCustomer(
 	token,
 	idempotencyKey
 ) {
-	stripe.customers
+	await stripe.customers
 		.create({
 			email,
 			phone,
@@ -98,19 +103,26 @@ exports.createStripeCustomer = function createStripeCustomer(
 				'Paid For': paidUntil,
 			},
 		})
-		.then((customer) => {
-			stripe.paymentIntents.create(
-				{
-					amount,
-					currency: 'USD',
-					description: 'Membership Payment',
-					payment_method: token,
-					customer: customer.id,
-					confirm: true,
-					receipt_email: email,
-				},
-				{ idempotencyKey }
-			);
+		.catch((err) => {
+			throw new Error(err);
+		})
+		.then(async (customer) => {
+			await stripe.paymentIntents
+				.create(
+					{
+						amount,
+						currency: 'USD',
+						description: 'Membership Payment',
+						payment_method: token,
+						customer: customer.id,
+						confirm: true,
+						receipt_email: email,
+					},
+					{ idempotencyKey }
+				)
+				.catch((err) => {
+					throw new Error(err);
+				});
 		});
 	logger.info({
 		service: 'payment',
@@ -154,15 +166,23 @@ exports.getTutors = async function getTutors() {
 async function getAccessToken() {
 	const cacheContent = getCache(key);
 	if (cacheContent) {
-		logger.info('Fetched Access token from cache');
+
+		logger.info('Fetched Access Token from Cache');
 		return cacheContent.token;
 	}
-	const url = `${COUGARCS_CLOUD_URL}/login`;
-	const data = { COUGARCS_CLOUD_ACCESS_KEY, COUGARCS_CLOUD_SECRET_KEY };
-	logger.info('Fetching access token.');
-	const res = await axios.post(url, data);
-	logger.info('Stored token in cache');
-	setCache(key, { token: res.data.token }, CACHE_TIME);
+
+	const URL = `${COUGARCS_CLOUD_URL}/login`;
+	const data = {
+		accessKeyID: COUGARCS_CLOUD_ACCESS_KEY,
+		secretAccessKey: COUGARCS_CLOUD_SECRET_KEY,
+	};
+	logger.info('Fetching access token...');
+	const res = await axios.post(URL, data);
+
+	logger.info('Stored Access Token in Cache');
+	setCache(key, { token: res.data.token }, CCSCLOUD_TOKEN_CACHE_TIME); // We need to reduce the cache time to 5 minutes (access token expires in 5)
+
+
 	return res.data.token;
 }
 
@@ -174,8 +194,13 @@ exports.postContact = async function postContact({
 	lastName,
 	phone,
 	shirtSize,
+
+	paidUntil,
 }) {
-	const token = getAccessToken();
+	const { membershipStart, membershipEnd } = getMembershipDates(paidUntil);
+
+	const token = await getAccessToken();
+	const URL = `${COUGARCS_CLOUD_URL}/contact`;
 
 	const data = {
 		transaction,
@@ -185,13 +210,31 @@ exports.postContact = async function postContact({
 		lastName,
 		phoneNumber: phone,
 		shirtSize,
-		membershipStart: '',
-		paidUntil: '',
-	};
 
-	logger.info(`POST to CougarCloud Api: api for: ${uhID}`);
-	const res = await axios.post(`${COUGARCS_CLOUD_URL}/contact`, data, {
-		headers: { Authorization: `Bearer ${token}` },
-	});
+		membershipStart,
+		membershipEnd,
+	};
+	const headers = { Authorization: `Bearer ${token}` };
+	logger.info(`POST to CougarCS Cloud API for UHID=${uhID}`);
+	const res = await axios.post(URL, data, { headers });
+
 	return res.data;
+};
+
+exports.getYoutubeVideos = async function getYoutubeVideos() {
+	const { data } = await axios.get(
+		`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${YOUTUBE_PLAYLIST_ID}&key=${YOUTUBE_API_KEY}`
+	);
+	const videos = [];
+	data.items.forEach((obj) => {
+		videos.push({
+			videoId: obj.snippet.resourceId.videoId,
+			title: obj.snippet.title,
+			description: obj.snippet.description,
+			thumbnail: obj.snippet.thumbnails.standard.url,
+		});
+	});
+
+	return { videos };
+
 };

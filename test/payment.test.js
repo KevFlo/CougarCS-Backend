@@ -15,16 +15,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('First Name is required');
+		expect(res.body.message[0].msg).toBe('First Name is required');
 	});
 
 	test('Missing last name', async () => {
@@ -34,16 +34,16 @@ describe('Payment API test', () => {
 				lastName: '',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Last Name is required');
+		expect(res.body.message[0].msg).toBe('Last Name is required');
 	});
 
 	test('Missing email address', async () => {
@@ -53,16 +53,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: '',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Email is required');
+		expect(res.body.message[0].msg).toBe('Email is required');
 	});
 
 	test('Invalid email address', async () => {
@@ -72,16 +72,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Email is required');
+		expect(res.body.message[0].msg).toBe('Email is required');
 	});
 
 	test('UHID missing', async () => {
@@ -91,16 +91,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('UHID is required');
+		expect(res.body.message[0].msg).toBe('UHID is required');
 	});
 
 	test('UHID invalid', async () => {
@@ -110,35 +110,35 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '123',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('UHID is required');
+		expect(res.body.message[0].msg).toBe('UHID is required');
 	});
 
-	test('Classification missing', async () => {
+	test('Shirt Size missing', async () => {
 		const res = await agent.post('/api/payment').send({
 			user: {
 				firstName: 'Test',
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: '',
+				shirtSize: '',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Classification is required');
+		expect(res.body.message[0].msg).toBe('Shirt Size is required');
 	});
 
 	test('Paid Until missing', async () => {
@@ -148,16 +148,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: '',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Paid Until is required');
+		expect(res.body.message[0].msg).toBe('Paid Until is required');
 	});
 
 	test('Phone number missing', async () => {
@@ -167,16 +167,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Phone Number is required');
+		expect(res.body.message[0].msg).toBe('Phone Number is required');
 	});
 
 	test('Phone number invalid', async () => {
@@ -186,16 +186,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Phone Number is required');
+		expect(res.body.message[0].msg).toBe('Phone Number is required');
 	});
 
 	test('Recaptcha Token Missing', async () => {
@@ -205,16 +205,16 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message[0].msg).toEqual('Recaptcha Token is required');
+		expect(res.body.message[0].msg).toBe('Recaptcha Token is required');
 	});
 
 	test('Recaptcha Testing verification Url Fail', async () => {
@@ -228,23 +228,23 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message).toEqual('Failed to validate ReCaptcha');
+		expect(res.body.message).toBe('Failed to validate ReCaptcha');
 	});
 
 	test('Stripe payment Fail', async () => {
 		jest.spyOn(apiCall, 'checkRecaptcha').mockImplementationOnce(() => {
 			return { data: { success: 'Success' } };
 		});
-
+		jest.spyOn(apiCall, 'sendEmail').mockImplementationOnce(() => true);
 		jest.spyOn(apiCall, 'createStripeCustomer').mockImplementationOnce(
 			() => {
 				throw new Error();
@@ -257,19 +257,21 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(500);
+		expect(res.status).toBe(500);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message).toEqual('Payment Error!');
+		expect(res.body.message).toBe('Payment Error!');
 	});
 
-	test('Add user to DB', async () => {
+
+	test('CCS Cloud Post Contact', async () => {
+
 		jest.spyOn(apiCall, 'checkRecaptcha').mockImplementationOnce(() => {
 			return { data: { success: 'Success' } };
 		});
@@ -285,20 +287,22 @@ describe('Payment API test', () => {
 				firstName: 'Test',
 				lastName: 'Test',
 				email: 'test@test.com',
-				uhID: '1234567',
-				classification: 'freshmen',
+				uhID: '7777777',
+				shirtSize: 'M',
 				paidUntil: 'semester',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(200);
+		expect(res.status).toBe(200);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message).toEqual('OK');
+		expect(res.body.message).toBe('OK');
 	});
 
-	test('DB insert fails', async () => {
+
+	test('CCS Cloud Post Contact Fail', async () => {
+
 		jest.spyOn(apiCall, 'checkRecaptcha').mockImplementationOnce(() => {
 			return { data: { success: 'Success' } };
 		});
@@ -319,15 +323,15 @@ describe('Payment API test', () => {
 				lastName: 'Test',
 				email: 'test@test.com',
 				uhID: '1234567',
-				classification: 'freshmen',
+				shirtSize: 'M',
 				paidUntil: 'year',
 				phone: '123-456-7890',
 			},
 			recaptchaToken: '123456abc',
 		});
 
-		expect(res.status).toEqual(200);
+		expect(res.status).toBe(200);
 		expect(res.body).toHaveProperty('message');
-		expect(res.body.message).toEqual('OK');
+		expect(res.body.message).toBe('OK');
 	});
 });

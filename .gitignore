@@ -18,3 +18,5 @@ logs/
 build/
 dist/
 coverage/
+grafana/grafana.ini
+newrelic_agent.log
